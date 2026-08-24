@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI Smart Timetable Generator - NEP 2020 Compliant, Dynamic Multi-Constraint Scheduling, and Automated Teacher Absence Rescheduling System.">
+    <title>AI Smart Timetable Generator | NEP 2020 Intelligent Scheduling</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+    <!-- Student & Faculty Authentication Portal Screen -->
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-backdrop"></div>
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                        <path d="m9 16 2 2 4-4"></path>
+                    </svg>
+                </div>
+                <h2>Autonomous College Portal</h2>
+                <p class="auth-subtitle">AI-Powered Institutional Academic Timetable & Scheduling System</p>
+            </div>
+
+            <!-- Role Selector Tabs -->
+            <div class="auth-role-tabs">
+                <button type="button" class="auth-role-btn active" id="roleBtnAdmin" onclick="selectAuthRole('admin')">
+                    <span class="role-icon">👨‍💼</span>
+                    <span class="role-name">Administrator</span>
+                </button>
+                <button type="button" class="auth-role-btn" id="roleBtnTeacher" onclick="selectAuthRole('teacher')">
+                    <span class="role-icon">👨‍🏫</span>
+                    <span class="role-name">Faculty / Teacher</span>
+                </button>
+                <button type="button" class="auth-role-btn" id="roleBtnStudent" onclick="selectAuthRole('student')">
+                    <span class="role-icon">🎓</span>
+                    <span class="role-name">Student</span>
+                </button>
+            </div>
+
+            <!-- 1-Click Quick Demo Sign In Cards -->
+            <div class="quick-login-section">
+                <div class="quick-login-title">⚡ Instant 1-Click Login:</div>
+                <div class="quick-login-buttons" id="quickLoginButtons">
+                    <!-- Injected dynamically based on selected role -->
+                </div>
+            </div>
+
+            <div class="auth-divider">
+                <span>or sign in with credentials</span>
+            </div>
+
+            <!-- Manual Sign In Form -->
+            <form id="authForm" onsubmit="event.preventDefault(); handleManualLogin();" autocomplete="off">
+                <div class="form-group mb-3" id="authIdentityGroup">
+                    <label for="authUsername" id="authIdentityLabel">Official Email Address</label>
+                    <input type="email" id="authUsername" class="form-control" placeholder="e.g. name@univ.edu" autocomplete="off" required>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="authPassword">Email / Account Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="authPassword" class="form-control" placeholder="Enter your email password" autocomplete="new-password" required>
+                        <button type="button" class="btn-toggle-password" onclick="togglePasswordVisibility('authPassword')" title="Show or hide password" aria-label="Toggle password visibility">
+                            <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                            <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-large w-100 mt-2" id="authSubmitBtn">
+                    🔐 Sign In with Email & Password
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <span>Autonomous College Academic Management &bull; NEP 2020 Compliant</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation / Header -->
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="brand-group">
+                <div class="brand-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                        <path d="m9 16 2 2 4-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="brand-title">ChronosAI Timetable Generator</h1>
+                    <p class="brand-subtitle">Autonomous College Smart Scheduling Engine • NEP 2020 Compliant</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <!-- User Profile Session Badge -->
+                <div id="userProfileBadge" class="user-profile-badge" style="display:none;">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div class="user-meta">
+                        <span class="user-name" id="userName">Administrator</span>
+                        <span class="user-role-tag" id="userRoleTag">Admin</span>
+                    </div>
+                    <button class="btn btn-outline btn-xs" onclick="handleLogout()" title="Sign out of current role">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        Logout
+                    </button>
+                </div>
+
+                <button id="btnLoadDemo" class="btn btn-outline admin-only-btn" title="Populate realistic college/school demo data">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                    Load Demo Data
+                </button>
+                <button id="btnQuickGenerate" class="btn btn-primary admin-only-btn" title="Run AI scheduling algorithm">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    Generate AI Schedule
+                </button>
+                <button id="btnThemeToggle" class="btn-icon" aria-label="Toggle Light/Dark Theme" title="Toggle Theme">
+                    <svg class="sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <svg class="moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs-nav" aria-label="Main Views">
+            <button class="tab-btn active" data-tab="adminTab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                Admin Dashboard
+            </button>
+            <button class="tab-btn" data-tab="configTab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                Academic Setup & Data
+            </button>
+            <button class="tab-btn" data-tab="generatorTab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+                AI Scheduling & Absences
+            </button>
+            <button class="tab-btn" data-tab="scheduleTab" id="scheduleTabBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Interactive Timetable Grid
+            </button>
+            <button class="tab-btn" data-tab="analyticsTab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                Workload & Room Analytics
+            </button>
+        </nav>
+
+        <!-- ============================================== -->
+        <!-- TAB 1: ADMIN DASHBOARD (LANDING VIEW)          -->
+        <!-- ============================================== -->
+        <section id="adminTab" class="tab-pane active">
+
+            <!-- Admin KPI Row -->
+            <div class="admin-kpi-grid">
+                <div class="admin-kpi-card" style="--kpi-color:#4f46e5;">
+                    <div class="admin-kpi-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </div>
+                    <div class="admin-kpi-info">
+                        <span class="admin-kpi-label">Total Classes</span>
+                        <h2 class="admin-kpi-value" id="adminClassCount">0</h2>
+                    </div>
+                </div>
+                <div class="admin-kpi-card" style="--kpi-color:#8b5cf6;">
+                    <div class="admin-kpi-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    </div>
+                    <div class="admin-kpi-info">
+                        <span class="admin-kpi-label">Active Faculty</span>
+                        <h2 class="admin-kpi-value" id="adminActiveFaculty">0</h2>
+                    </div>
+                </div>
+                <div class="admin-kpi-card" style="--kpi-color:#ef4444;">
+                    <div class="admin-kpi-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    </div>
+                    <div class="admin-kpi-info">
+                        <span class="admin-kpi-label">Faculty on Leave</span>
+                        <h2 class="admin-kpi-value" id="adminAbsentFaculty">0</h2>
+                    </div>
+                </div>
+                <div class="admin-kpi-card" style="--kpi-color:#10b981;">
+                    <div class="admin-kpi-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    </div>
+                    <div class="admin-kpi-info">
+                        <span class="admin-kpi-label">Scheduled Slots</span>
+                        <h2 class="admin-kpi-value" id="adminTotalSlots">0</h2>
+                    </div>
+                </div>
+                <div class="admin-kpi-card" style="--kpi-color:#f59e0b;">
+                    <div class="admin-kpi-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                    </div>
+                    <div class="admin-kpi-info">
+                        <span class="admin-kpi-label">Auto-Rescheduled</span>
+                        <h2 class="admin-kpi-value" id="adminRescheduled">0</h2>
+                    </div>
+                </div>
+                <div class="admin-kpi-card" style="--kpi-color:#3b82f6;">
+                    <div class="admin-kpi-icon">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    </div>
+                    <div class="admin-kpi-info">
+                        <span class="admin-kpi-label">Rooms & Labs</span>
+                        <h2 class="admin-kpi-value" id="adminRoomCount">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Admin Grid -->
+            <div class="split-layout">
+
+                <!-- Left: Faculty Status Panel -->
+                <div class="card">
+                    <div class="card-header flex-between">
+                        <div>
+                            <h2>👨‍🏫 Faculty Status Board</h2>
+                            <p class="text-muted">Real-time availability and workload for all instructors.</p>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="renderAdminDashboard()">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                            Refresh
+                        </button>
+                    </div>
+                    <div class="card-body" style="padding:0;">
+                        <div class="admin-table-wrapper custom-scroll">
+                            <table class="admin-table" id="adminFacultyTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Professor</th>
+                                        <th>Email</th>
+                                        <th>Periods/Wk</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminFacultyTableBody">
+                                    <tr><td colspan="6" class="text-center text-muted py-4">No faculty data yet.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Quick Actions + Rescheduling Log -->
+                <div class="column-stack">
+
+                    <!-- Quick Admin Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>⚡ Quick Admin Actions</h2>
+                            <p class="text-muted">Common administrative operations at a glance.</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="admin-actions-grid">
+                                <button class="admin-action-btn" onclick="generateTimetable(); switchTab('scheduleTab');">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                    <span>Regenerate Timetable</span>
+                                </button>
+                                <button class="admin-action-btn" onclick="switchTab('generatorTab');">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                    <span>Mark Faculty Absent</span>
+                                </button>
+                                <button class="admin-action-btn" onclick="exportCSV();">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    <span>Export CSV Report</span>
+                                </button>
+                                <button class="admin-action-btn" onclick="exportJSON();">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                                    <span>Export JSON Backup</span>
+                                </button>
+                                <button class="admin-action-btn" onclick="printTimetable();">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                    <span>Print Schedule</span>
+                                </button>
+                                <button class="admin-action-btn admin-action-danger" onclick="clearAllData();">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    <span>Reset All Data</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rescheduling Log -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>📋 Auto-Rescheduling Activity Log</h2>
+                            <p class="text-muted">History of all AI-triggered class substitutions.</p>
+                        </div>
+                        <div class="card-body" style="padding:0;">
+                            <div class="admin-table-wrapper custom-scroll" style="max-height:280px;">
+                                <table class="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Class</th>
+                                            <th>Subject</th>
+                                            <th>Original Teacher</th>
+                                            <th>Substitute</th>
+                                            <th>Period</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminRescheduleLog">
+                                        <tr><td colspan="6" class="text-center text-muted py-4">No rescheduling activity yet.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- EmailJS Configuration Panel -->
+            <div class="card mt-4" id="emailjsConfigCard">
+                <div class="card-header flex-between">
+                    <div>
+                        <h2>⚙️ Email Service Configuration (EmailJS)</h2>
+                        <p class="text-muted">Connect your free <strong>EmailJS</strong> account to send emails directly from this app — no backend required.</p>
+                    </div>
+                    <button class="btn btn-sm btn-outline" onclick="toggleEmailConfig()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        <span id="emailConfigToggleLabel">Show Setup</span>
+                    </button>
+                </div>
+                <div class="card-body" id="emailjsConfigBody" style="display:none;">
+
+                    <!-- Step-by-step guide -->
+                    <div class="emailjs-guide">
+                        <div class="guide-step">
+                            <span class="guide-step-num">1</span>
+                            <div>Sign up free at <a href="https://www.emailjs.com" target="_blank" rel="noopener" style="color:var(--primary);">emailjs.com</a> (200 emails/month free).</div>
+                        </div>
+                        <div class="guide-step">
+                            <span class="guide-step-num">2</span>
+                            <div>Go to <strong>Email Services</strong> → Add a service (Gmail, Outlook, etc.) → Copy the <strong>Service ID</strong>.</div>
+                        </div>
+                        <div class="guide-step">
+                            <span class="guide-step-num">3</span>
+                            <div>Go to <strong>Email Templates</strong> → Create a new template → Use variables: <code>{{to_name}}</code>, <code>{{to_email}}</code>, <code>{{subject}}</code>, <code>{{message}}</code> → Copy the <strong>Template ID</strong>.</div>
+                        </div>
+                        <div class="guide-step">
+                            <span class="guide-step-num">4</span>
+                            <div>Go to <strong>Account → API Keys</strong> → Copy your <strong>Public Key</strong>.</div>
+                        </div>
+                        <div class="guide-step">
+                            <span class="guide-step-num">5</span>
+                            <div>Paste all three values below and click <strong>Save & Connect</strong>.</div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-3 mt-4">
+                        <div class="form-group">
+                            <label for="ejsServiceId">EmailJS Service ID</label>
+                            <input type="text" id="ejsServiceId" class="form-control" placeholder="service_xxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label for="ejsTemplateId">EmailJS Template ID</label>
+                            <input type="text" id="ejsTemplateId" class="form-control" placeholder="template_xxxxxxx">
+                        </div>
+                        <div class="form-group">
+                            <label for="ejsPublicKey">EmailJS Public Key</label>
+                            <input type="text" id="ejsPublicKey" class="form-control" placeholder="xxxxxxxxxxxxxxxxxxxx">
+                        </div>
+                    </div>
+
+                    <div class="mt-3" style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="saveEmailjsConfig()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            Save & Connect
+                        </button>
+                        <button class="btn btn-outline" onclick="testEmailjsConnection()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.49 12c-.84-2.38-1.14-4.88-.86-7.31A2 2 0 0 1 5.82 3h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L9.91 10.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 24 18z"></path></svg>
+                            Send Test Email
+                        </button>
+                        <div id="ejsConnectionStatus" class="emailjs-status-pill" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Dispatch Center -->
+            <div class="card mt-4">
+                <div class="card-header flex-between">
+                    <div>
+                        <h2>📧 Email Dispatch Center</h2>
+                        <p class="text-muted">Review and send substitute faculty notification emails directly from this app.</p>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+                        <span class="admin-dispatch-badge" id="ejsConnectedBadge" style="display:none;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            EmailJS Connected
+                        </span>
+                        <button class="btn btn-secondary btn-sm" onclick="sendAllEmails()" id="btnSendAll" style="display:none;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                            Send All Emails
+                        </button>
+                        <button class="btn btn-outline btn-sm" onclick="copyAllEmails()">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            Copy All
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="adminEmailList" class="email-stack">
+                        <p class="text-muted text-center py-4">No notifications generated yet. Mark a faculty member absent to trigger auto-rescheduling.</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: ACADEMIC SETUP & DATA MANAGEMENT -->
+        <!-- ============================================== -->
+        <section id="configTab" class="tab-pane">
+            
+            <!-- Global Timetable Constraints Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>⚙️ Institutional Timing & Constraints (NEP 2020)</h2>
+                        <p class="text-muted">Configure working schedule parameters, daily slots, and lunch break periods.</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid-3">
+                        <div class="form-group">
+                            <label for="collegeStartTime">⏰ Institution Start Time</label>
+                            <input type="time" id="collegeStartTime" class="form-control" value="09:00">
+                        </div>
+                        <div class="form-group">
+                            <label for="periodDuration">⏱️ Lecture Duration</label>
+                            <select id="periodDuration" class="form-control">
+                                <option value="40">40 Minutes</option>
+                                <option value="45">45 Minutes</option>
+                                <option value="50" selected>50 Minutes (Standard)</option>
+                                <option value="55">55 Minutes</option>
+                                <option value="60">60 Minutes (1 Hour)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="lunchDuration">🍱 Lunch Break Duration</label>
+                            <select id="lunchDuration" class="form-control">
+                                <option value="30">30 Minutes</option>
+                                <option value="40">40 Minutes</option>
+                                <option value="45">45 Minutes</option>
+                                <option value="50" selected>50 Minutes</option>
+                                <option value="60">60 Minutes (1 Hour)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-grid-3 mt-3">
+                        <div class="form-group">
+                            <label for="workingDays">📅 Working Days per Week</label>
+                            <select id="workingDays" class="form-control">
+                                <option value="5">5 Days (Monday - Friday)</option>
+                                <option value="6" selected>6 Days (Monday - Saturday)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="periodsPerDay">🔢 Teaching Periods per Day</label>
+                            <select id="periodsPerDay" class="form-control">
+                                <option value="5">5 Periods (Short Day)</option>
+                                <option value="6" selected>6 Periods (Standard)</option>
+                                <option value="7">7 Periods (Extended)</option>
+                                <option value="8">8 Periods (Full Day)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="lunchPeriodSelect">🍱 Lunch Break Placement</label>
+                            <select id="lunchPeriodSelect" class="form-control">
+                                <option value="2">After Period 2</option>
+                                <option value="3" selected>After Period 3 (Standard)</option>
+                                <option value="4">After Period 4</option>
+                                <option value="5">After Period 5</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Live Bell Schedule Timeline Preview -->
+                    <div class="bell-schedule-container mt-4">
+                        <div class="bell-schedule-title">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            Live Institutional Bell Schedule & Timing Timeline
+                        </div>
+                        <div id="bellSchedulePreview" class="bell-schedule-pills"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Column Master Data Entry -->
+            <div class="split-layout">
+                
+                <!-- Left Column: Classes and Rooms -->
+                <div class="column-stack">
+                    
+                    <!-- Classes Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2>🏫 Classes / Batches / Sections</h2>
+                                <p class="text-muted">Define academic cohorts and degree sections.</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="classForm" class="input-action-row" onsubmit="event.preventDefault(); addClass();">
+                                <div class="form-group flex-1">
+                                    <input type="text" id="className" class="form-control" placeholder="e.g. B.Tech CSE 3A, MCA 1st Sem" required>
+                                </div>
+                                <button type="submit" class="btn btn-secondary">
+                                    + Add Class
+                                </button>
+                            </form>
+                            <div id="classList" class="entity-list custom-scroll"></div>
+                        </div>
+                    </div>
+
+                    <!-- Rooms & Laboratories Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2>🚪 Infrastructure (Rooms & Labs)</h2>
+                                <p class="text-muted">Register lecture halls, seminar rooms, and specialized laboratories.</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="roomForm" onsubmit="event.preventDefault(); addRoom();">
+                                <div class="form-grid-2">
+                                    <div class="form-group">
+                                        <label for="roomName">Room / Lab Identifier</label>
+                                        <input type="text" id="roomName" class="form-control" placeholder="e.g. Lab-102 (AI Lab), LH-301" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="roomType">Facility Category</label>
+                                        <select id="roomType" class="form-control">
+                                            <option value="classroom">Classroom / Lecture Hall</option>
+                                            <option value="lab">Specialized Laboratory</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-secondary mt-3">
+                                    + Add Facility
+                                </button>
+                            </form>
+                            <div id="roomList" class="entity-list custom-scroll"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Faculty and Subjects -->
+                <div class="column-stack">
+
+                    <!-- Faculty Members Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2>👨‍🏫 Faculty Members & Instructors</h2>
+                                <p class="text-muted">Manage instructors, departments, and attendance readiness.</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="teacherForm" onsubmit="event.preventDefault(); addTeacher();">
+                                <div class="form-grid-2">
+                                    <div class="form-group">
+                                        <label for="teacherName">Professor Name</label>
+                                        <input type="text" id="teacherName" class="form-control" placeholder="e.g. Dr. Ravi Sharma" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="teacherEmail">Official Email</label>
+                                        <input type="email" id="teacherEmail" class="form-control" placeholder="ravi.sharma@univ.edu" required>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-secondary mt-3">
+                                    + Add Faculty Member
+                                </button>
+                            </form>
+                            <div id="teacherList" class="entity-list custom-scroll"></div>
+                        </div>
+                    </div>
+
+                    <!-- Subjects / Courses Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h2>📚 Courses & Subject Allocations (NEP 2020)</h2>
+                                <p class="text-muted">Link subjects to classes, assigned professors, and weekly hours.</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <form id="subjectForm" onsubmit="event.preventDefault(); addSubject();">
+                                <div class="form-grid-2">
+                                    <div class="form-group">
+                                        <label for="subjectClass">Target Class / Section</label>
+                                        <select id="subjectClass" class="form-control" required>
+                                            <option value="">Select Class</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="subjectTeacher">Assigned Professor</label>
+                                        <select id="subjectTeacher" class="form-control" required>
+                                            <option value="">Select Teacher</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-grid-3 mt-2">
+                                    <div class="form-group">
+                                        <label for="subjectName">Subject Name</label>
+                                        <input type="text" id="subjectName" class="form-control" placeholder="e.g. Artificial Intelligence" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="subjectPeriods">Periods / Week</label>
+                                        <input type="number" id="subjectPeriods" class="form-control" min="1" max="15" value="4" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="subjectType">Course Type</label>
+                                        <select id="subjectType" class="form-control">
+                                            <option value="theory">Theory Lecture</option>
+                                            <option value="lab">Practical / Laboratory</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-secondary mt-3">
+                                    + Assign Course to Class
+                                </button>
+                            </form>
+                            <div id="subjectList" class="entity-list custom-scroll"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ============================================== -->
+        <!-- TAB 2: AI SCHEDULING ENGINE & ABSENCES -->
+        <!-- ============================================== -->
+        <section id="generatorTab" class="tab-pane">
+            
+            <div class="split-layout">
+                
+                <!-- Engine Control Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>🤖 Multi-Constraint AI Timetable Solver</h2>
+                            <p class="text-muted">Zero-conflict heuristics optimizing room, teacher, and section allocations.</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        
+                        <div class="ai-feature-box">
+                            <h3 class="feature-box-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                Automated Constraint Enforcement
+                            </h3>
+                            <ul class="feature-checklist">
+                                <li><span>✓</span> <strong>Zero Faculty Overlaps:</strong> No teacher is scheduled in two places at once.</li>
+                                <li><span>✓</span> <strong>Zero Room Clashes:</strong> Physical spaces and labs have 100% clash-free usage.</li>
+                                <li><span>✓</span> <strong>Lab Room Compatibility:</strong> Practical courses strictly allocated to Laboratory facilities.</li>
+                                <li><span>✓</span> <strong>NEP 2020 Balanced Dispersion:</strong> Weekly workload distributed across weekdays to prevent burnout.</li>
+                                <li><span>✓</span> <strong>Protected Lunch Intervals:</strong> Preserves dining hour across all student cohorts.</li>
+                            </ul>
+                        </div>
+
+                        <div class="action-card-footer mt-4">
+                            <button class="btn btn-primary btn-large w-100" onclick="generateTimetable(); switchTab('scheduleTab');">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                ✨ Execute AI Timetable Generation
+                            </button>
+                        </div>
+                        <div id="generateMessage" class="status-banner" style="display:none;"></div>
+                    </div>
+                </div>
+
+                <!-- Teacher Absence & Emergency Rescheduler -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>🚨 Faculty Absence & Automated Rescheduling</h2>
+                            <p class="text-muted">Handle emergency leaves with intelligent peer substitution & time reallocation.</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        
+                        <p class="text-muted small-text mb-3">
+                            When an instructor is marked absent on a specific date, ChronosAI searches for available qualified peer faculty with free slots, preserves classroom availability, and automatically drafts notification dispatch notices.
+                        </p>
+
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label for="absentTeacher">Absent Faculty Member</label>
+                                <select id="absentTeacher" class="form-control">
+                                    <option value="">Select Absent Teacher</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="absenceDate">Absence Effective Date</label>
+                                <input type="date" id="absenceDate" class="form-control">
+                            </div>
+                        </div>
+
+                        <button class="btn btn-danger btn-large w-100 mt-3" onclick="markTeacherAbsent()">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            Mark Absent & Auto-Reschedule Classes
+                        </button>
+
+                        <div id="absenceMessage" class="status-banner mt-3" style="display:none;"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Email Notification Center (Generated dynamically) -->
+            <div class="card mt-4" id="emailCard" style="display:none;">
+                <div class="card-header flex-between">
+                    <div>
+                        <h2>📧 Automated Faculty Notification Center</h2>
+                        <p class="text-muted">Instant notifications drafted for substitute faculty members.</p>
+                    </div>
+                    <button class="btn btn-outline btn-sm" onclick="copyAllEmails()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        Copy All Notices
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="emailList" class="email-stack"></div>
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ============================================== -->
+        <!-- TAB 3: INTERACTIVE TIMETABLE GRID -->
+        <!-- ============================================== -->
+        <section id="scheduleTab" class="tab-pane">
+            
+            <div class="card" id="resultCard">
+                <div class="card-header flex-between flex-wrap gap-3">
+                    <div>
+                        <h2>📅 Master Academic Timetable</h2>
+                        <p class="text-muted">Interactive schedule matrix with multi-dimensional filtering.</p>
+                    </div>
+                    <div class="action-buttons-group">
+                        <button class="btn btn-outline" onclick="exportCSV()" title="Download schedule as CSV spreadsheet">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Export CSV
+                        </button>
+                        <button class="btn btn-outline" onclick="exportJSON()" title="Export JSON backup">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            Export JSON
+                        </button>
+                        <button class="btn btn-secondary" onclick="printTimetable()" title="Print institutional timetable document">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                            Print Schedule
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    
+                    <!-- View Filter Bar -->
+                    <div class="filter-toolbar">
+                        <div class="filter-item">
+                            <label for="viewMode">View Mode</label>
+                            <select id="viewMode" class="form-control" onchange="updateFilterTargetDropdown(); renderTimetable();">
+                                <option value="class">🎓 Filter by Class / Section</option>
+                                <option value="teacher">👨‍🏫 Filter by Faculty Member</option>
+                                <option value="room">🚪 Filter by Room / Lab</option>
+                                <option value="master">📊 Complete Master Matrix</option>
+                            </select>
+                        </div>
+                        <div class="filter-item flex-1" id="filterTargetContainer">
+                            <label for="filterTarget" id="filterTargetLabel">Select Cohort</label>
+                            <select id="filterTarget" class="form-control" onchange="renderTimetable()">
+                                <option value="all">-- All Classes --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Legend and Badges -->
+                    <div class="schedule-legend">
+                        <div class="legend-item"><span class="badge-dot badge-theory"></span> Theory Lecture</div>
+                        <div class="legend-item"><span class="badge-dot badge-lab"></span> Laboratory / Practical</div>
+                        <div class="legend-item"><span class="badge-dot badge-rescheduled"></span> Rescheduled / Substitute</div>
+                        <div class="legend-item"><span class="badge-dot badge-lunch"></span> Lunch Recess</div>
+                        <div class="legend-item"><span class="badge-dot badge-free"></span> Free Period</div>
+                    </div>
+
+                    <!-- Timetable Table -->
+                    <div class="table-wrapper custom-scroll" id="timetablePrintArea">
+                        <table id="timetable">
+                            <thead>
+                                <tr id="tableHeader"></tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center py-5 text-muted">
+                                        <div class="empty-state">
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2 text-muted"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                            <p>No timetable generated yet. Click <strong>"Generate AI Schedule"</strong> or <strong>"Load Demo Data"</strong> to begin.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ============================================== -->
+        <!-- TAB 4: WORKLOAD & ROOM ANALYTICS -->
+        <!-- ============================================== -->
+        <section id="analyticsTab" class="tab-pane">
+            
+            <div class="split-layout">
+                
+                <!-- Faculty Workload Distribution -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>📊 Faculty Workload Distribution</h2>
+                            <p class="text-muted">Assigned periods per week per professor against standard limit (Max 18-22 hrs).</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="facultyWorkloadList" class="analytics-bars-container">
+                            <p class="text-muted text-center py-4">Generate schedule to view workload metrics.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Room & Lab Utilization -->
+                <div class="card">
+                    <div class="card-header">
+                        <div>
+                            <h2>🏛️ Facility & Lab Utilization Rates</h2>
+                            <p class="text-muted">Percentage of weekly available time slots occupied.</p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="roomUtilizationList" class="analytics-bars-container">
+                            <p class="text-muted text-center py-4">Generate schedule to view room metrics.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Interactive Slot Details Modal -->
+    <div class="modal-backdrop" id="slotModal" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="modalTitle">Slot Details</h3>
+                <button class="btn-icon" onclick="closeModal()" aria-label="Close modal">✕</button>
+            </div>
+            <div class="modal-body" id="modalContent">
+                <!-- Injected via JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EmailJS SDK (sends emails directly from browser, no backend needed) -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+    <!-- Application Script -->
+    <script src="app.js"></script>
+</body>
+</html>
